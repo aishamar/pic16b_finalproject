@@ -45,9 +45,11 @@ import matplotlib.pyplot as plt
 
 # Loading in Spotify datasets
 df_read = pd.read_csv('/Users/aishamardini/pic16b_finalproject/dataset.csv')
+print("Spotify Music Dataset")
 print(df_read.head())
 
 # checking if there are NaN values in track id, artists, albums
+print("Check track ID, artists, album name NAN")
 print(df_read[df_read["track_id"].isna()])
 
 print(df_read[df_read["artists"].isna()])
@@ -62,21 +64,24 @@ df_read = df_read.dropna()
 df_read = df_read.drop_duplicates()
 
 # checking the types for columns
-print(df_read.dtypes)
+#print(df_read.dtypes)
 
 # check column names
+print("Column Names")
 print(df_read.columns)
 
 # drop the unnamed column
 df = df_read.drop(columns=['Unnamed: 0'])
 
 # check statistics
+print("Statistics before dropping:")
 print(df.describe())
 
 # check to see if multiartists are separated by semicolon
 df[df["artists"].str.contains(";")]["artists"].unique()[:20]
 
 # how many loudness columns are 0
+print("How many zeros in loudness, instrumetalness, and tempo")
 print((df["loudness"] == 0).sum())
 
 # how many instrumentalness columns are 0
@@ -92,18 +97,20 @@ df = df[df["tempo"] != 0]
 df = df.sort_values("popularity", ascending=False).drop_duplicates(subset=["track_name", "artists"], keep="first")
 
 # check to see dropped
+print("Number of duplicated tracks")
 print(df.duplicated(subset=["track_name", "artists"]).sum())
 
 # remove songs with popularity == 0
 df = df[df["popularity"] > 0]
 
 # check statistics again
+print("Statistics after dropping:")
 print(df.describe())
 
 
 
 # Step 2: Data Visualization
-
+"""
 # bar plot of the first 15 most popular genres
 
 mostpop = df.groupby("track_genre")["popularity"].mean().sort_values(ascending=False).head(15)
@@ -146,6 +153,8 @@ for f in features:
     plt.tight_layout()
     plt.show()
 
+"""
+
 
 """ 
 Second Dataset:
@@ -163,72 +172,69 @@ source_type: an entry point a user first plays music on mobile apps. An entry po
 target: this is the target variable. target=1 means there are recurring listening event(s) triggered within a month after the user’s very first observable listening event, target=0 otherwise.
 
 """
-"""
+
+# load in 2nd datasets; view columns
 train = pd.read_csv('/Users/aishamardini/pic16b_finalproject/train.csv')
-train.columns
-print(train.duplicated().sum())
-train.isnull().sum()
-train = train[['msno', 'song_id', 'source_system_tab', 'source_type', 'target']]
-train
-
-train['source_system_tab'].unique()
-train['source_system_tab'].value_counts()
-train = train[~train['source_system_tab'].isin(['notification', 'settings'])]
-train
-
-songs = pd.read_csv('/Users/lillypeters/Downloads/songs.csv')
-
-
-
+songs = pd.read_csv('/Users/aishamardini/pic16b_finalproject/songs.csv')
 members = pd.read_csv('/Users/aishamardini/pic16b_finalproject/members.csv')
+song_extra = pd.read_csv('/Users/aishamardini/pic16b_finalproject/song_extra_info.csv')
+
+# print info of main dataset
+print("User Dataset")
+print("Column names: ", train.columns)
+print("Number of duplicates: ", train.duplicated().sum())
+print("Number of null: ", train.isnull().sum())
+
+# select columns for main dataset
+train = train[['msno', 'song_id', 'source_system_tab', 'source_type', 'target']]
+print("Number of appreances: ", train['source_system_tab'].value_counts())
+train = train[~train['source_system_tab'].isin(['notification', 'settings'])]
+print()
+print("Main Dataset")
+print(train.head())
+
+
+# select columns and drop NAN
 members = members[['bd', 'msno', 'city']]
 members.dropna()
+print()
+print("Members Dataset")
+print(members.head())
 
-song_extra = pd.read_csv('/Users/aishamardini/pic16b_finalproject/song_extra_info.csv')
-song_extra
 
+# add a song name column by merging the 2 datasets based on song id
 merged_song = pd.merge(songs, song_extra[['song_id', 'name']], on='song_id', how='left')
-
 merged_song.dropna()
-
-
-
-merged_song.dropna()
-
 merged_song = merged_song[['artist_name', 'name', 'song_id']]
-merged_song
-
-
+print()
+print("1st Merged Dataset (Song Names and ID):")
+print(merged_song.head())
 merged_song[merged_song.duplicated()]
-print(merged_song.duplicated().sum())
-
-
-
+print("How many duplicated songs in dataset: ", merged_song.duplicated().sum())
+# drop duplicates
 merged_song = merged_song.drop_duplicates()
 
-
+# 2nd merging 
 colab_df= pd.merge(train, merged_song[['song_id', 'name', 'artist_name']], on='song_id', how='left')
+print()
+print("2nd Merged Dataset:")
+print(colab_df.head())
 
-colab_df
+# final merged and clean dataset
+collab = pd.merge(colab_df, members[['bd', 'msno', 'city']], on='msno', how='left')
+# rename columns to be more explicit
+collab = collab.rename(columns={'bd': 'age', 'msno':'user', 'target':'repeated'})
+# source_system_tab sees where the song was found (either in the playlist, search, discover, explore, radio, or listened with someone)
+collab = collab.dropna(subset=['source_system_tab'])
+print()
+print("Unique outputs in source_system_tab ", collab['source_system_tab'].unique())
 
-kaggle = pd.merge(colab_df, members[['bd', 'msno', 'city']], on='msno', how='left')
+# label encode source system tab column 1-6
+collab['source_system_tab'] = collab['source_system_tab'].map({'my library': 6, 'search': 5, 'discover': 4,      
+    'explore': 3, 'radio': 2, 'listen with': 1 })
 
-kaggle.rename(columns={'bd': 'age'})
+print()
+print("FINAL Merged Dataset:")
+print(collab.head())
+print("Final dataset column names: ", collab.columns)
 
-kaggle['source_system_tab'].unique()
-kaggle = kaggle.dropna(subset=['source_system_tab'])
-kaggle['source_system_tab'].unique()
-kaggle['source_system_tab'] = kaggle['source_system_tab'].map({
-    'my library': 6,    # strongest signal
-    'search': 5,        # user actively looked for it
-    'discover': 4,      
-    'explore': 3,
-    'radio': 2,
-    'listen with': 1    # weakest signal
-})
-
-
-kaggle['source_system_tab'].unique()
-kaggle['source_system_tab'].unique()
-kaggle['source_system_tab'].value_counts()
-"""
