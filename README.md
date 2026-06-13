@@ -39,3 +39,10 @@ Now that we have designed our Recommender System. For the system, we mainly use 
 Build a sparse matrix based on whether a user repeated a song.
 Use Non-negative matrix facorization to decompose our matrix into two lower ranked matrices and extract song features and weights for each song.
 Each user will be given a song recommendation and have a certain amount of test songs they listened to, to determine if it's an accuracte recommendation based on recall@k and precision@k.
+
+## How to Run
+1. Clone the repository
+2. Install dependencies: `pip install -r requirements.txt`
+3. Run collaborative filtering: `exploratory_analysis.ipynb`
+4. Run content-based filtering: `CNN2-final.ipynb`
+
