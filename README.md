@@ -13,7 +13,12 @@ There are several challenges in developing a music recommendation system. We wil
 
 ## Data Sources
 
-Our main goal is to integrate this project with datasets: Kaggle and Kaggle.
+# Data Sources
+
+Our main goal is to integrate this project with datasets: 
+
+https://www.kaggle.com/competitions/kkbox-music-recommendation-challenge/data
+https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset
 
 ## Content-based Recommenders:
 
